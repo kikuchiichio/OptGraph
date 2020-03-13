@@ -1,0 +1,215 @@
+This directory contains the sample programs to solve the sample problems of the article:
+
+Title:  Particle Swarm Optimization Applied to Hodge Decomposition on Graphs
+Authors: Ichio Kikuchi, Akihito Kikuchi
+
+
+I) Roundup
+
+The sample problems aim to do Hodge decomposition of the flow on the graph. We use the currency exchange rate as the flow on the graph.
+  
+        USD    JPY      EUR    CAD    GBP    AUD    CHF
+1 USD = 1.0000 114.6700 0.6869 0.9187 0.4790 1.0768 1.1439
+1 JPY = 0.0087 1.0000   0.0060 0.0080 0.0042 0.0094 0.0100
+1 EUR = 1.4558 166.9365 1.0000 1.3374 0.6974 1.5676 1.6653
+1 CAD = 1.0885 124.8177 0.7477 1.0000 0.5214 1.1721 1.2451
+1 GBP = 2.0875 239.3791 1.4340 1.9178 1.0000 2.2478 2.3879
+1 AUD = 0.9287 106.4940 0.6379 0.8532 0.4449 1.0000 1.0623
+1 CHF = 0.8742 100.2448 0.6005 0.8031 0.4188 0.9413 1.0000
+
+Universal equivalent 
+        USD    JPY      EUR    CAD    GBP    AUD    CHF
+        1.7097 0.0149 2.4890 1.8610 3.5691 1.5878 1.4946
+    --> 1.0000 0.0087 1.4558 1.0884 2.0875 0.9287 0.871498 (THE RATIO TO USD)
+
+The authors presented three example problems from that table.
+
+(P1) Do the optimization to extract the gradient flow of the table as it is.
+(P2) Add the random noise to the data in the table. Then do the optimization for the gradient flow and the curl flow.
+(P3) Cut some of the edges from the graph so that the graph is not complete. Then do the optimization.
+
+(P1) is solved by proto1.cc. 
+
+You use the input Data: exc.txt (The currencies exchange rate). 
+
+Then you execute ./proto1.exe.  
+
+The table of the currency exchange rate is at first turned into that of the logarithm.
+
+The run issues the following lines on the screen. It shows the coordinate of the group's best point.  The corresponding value of the objective function is found at the right of "->". As the logarithm of the raw data is processed as the flow, it is necessary to recover the exponential.   So the BEST results are presented in two lines.
+  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0
+ BEST [given by exp(-s)/exp(-s0)]: 1.000000 0.001525 0.086486 0.050443 0.120042 0.310521 0.136576 
+ BEST [s, as it is]: -3.470276 3.015272 -1.022507 -0.483359 -1.350360 -2.300773 -1.479403  -> 103.855248
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the end,  you obtain the following lines.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+149
+
+ BEST [given by exp(-s)/exp(-s0)]: 1.000000 0.008732 1.455483 1.088729 2.085973 0.928554 0.873913 
+ BEST [s, as it is]: -1.898242 2.842520 -2.273580 -1.983253 -2.633477 -1.824116 -1.763467  -> 0.000047
+
+ KER(DIV)?-0.000000 -0.000000 -0.000000 -0.000000 -0.000000 -0.000000 -0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -0.000000 -0.000000 -0.000000 -0.000000 0.000000 0.000000 0.000000 0.000000 0.000000 -0.000000 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As the optimization is done properly, we arrive at the values (BEST [given by exp(-s)/exp(-s0)]), close to
+"1.000000 0.008715 1.455811 1.088495 2.087559 0.928701 0.871498". In the final lines, the program checks if the residue lies in the kernel of the div operator. 
+
+
+(P2) is solved by proto2_grad.cc and proto2_curlstar.cc
+
+In this case, we add random noises to the logarithm of the currencies exchange ratio. Namely, for i < j, we set as follows.
+
+   Y(i,j)->Y(i,j)+random()
+   Y(j,i) = -Y(i,j)
+
+You use the input Data: exc.txt (The currencies exchange rate). 
+You execute ./proto2.grad.exe
+
+In the end,  you  obtain the following lines. The residue (shown in the right of "->") remains, because the flow contains the curl flow component.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+149
+
+ BEST [given by exp(-s)]: 1.000000 0.012852 1.539152 1.382586 3.233294 1.494341 1.127929 
+ BEST [s, as it is]: 1.000000 0.012852 1.539152 1.382586 3.233294 1.494341 1.127929  -> 9.648296
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To get the curl flow, you execute ./proto2_curlstar.exe. The lines show the group's best values on the 3-cliques  and the residues (in the right of "->"). You get almost zero residue and non-zero "curl-star". 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+149
+ BEST: -0.873899 1.149073 -0.712180 0.459944 0.269606 -1.269949 1.272697 -2.192218 1.048677 1.165947 0.329432 -1.289216 0.801854 1.084042 -0.253380 -1.208870 -1.521383 2.106091 1.499045 0.774076 -1.496685 -0.948735 0.326277 -0.860894 0.494827 0.512229 1.349662 0.691214 -1.015365 1.123980 0.027225 -0.980162 -0.838006 -1.127680 0.112470  -> 0.000000
+curlstar
+   0.29254   -0.26689    0.32704    0.15943    0.34761   -0.85973    0.00098    0.68660   -0.49949    0.01909    0.08536    0.07429   -0.65230   -0.39320    0.70530    0.63408    0.03489    0.41895   -0.75493    0.39665   -0.74654 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(P3) is solved by proto3_grad.cc and proto3_curlstar.cc
+
+You use the input Data: exc.txt (The currency exchange rate). 
+
+You should prepare the adjacency data of the nodes, written in edge.txt. For example, when you imagine a circle, you can write as follows. 
+ 
+0 1 0 0 0 0 1
+1 0 1 0 0 0 0
+0 1 0 1 0 0 0
+0 0 1 0 1 0 0
+0 0 0 1 0 1 0
+0 0 0 0 1 0 1
+1 0 0 0 0 1 0
+
+The table delineates the closed path (Node 0 -- 1 -- 2 -- 3 -- 5 --  5 -- 6 -- 0). 
+
+
+Then you execute ./proto3_grad.exe.
+
+The exchanges between not-connected nodes are neglected. The noise is added to the logarithmic flow similarly as in (P2).  
+
+In the end you shall obtain these lines. You should notice the particular feature of the residue, which leads to the zero-divergence.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ BEST: 1.000000 0.030671 2.385351 2.693889 24.628085 2.356622 0.289060 1.000000 0.008715 1.455811 1.088495 2.087559 0.928701 0.871498  -> 0.148862
+GRAD
+ 0.000000  -3.484424  0.000000  0.000000  0.000000  0.000000  -1.241121 
+ 3.484424  0.000000  4.353770  0.000000  0.000000  0.000000  0.000000 
+ -0.000000  -4.353770  0.000000  0.121640  0.000000  -0.000000  -0.000000 
+ -0.000000  -0.000000  -0.121640  0.000000  2.212902  -0.000000  -0.000000 
+ -0.000000  -0.000000  -0.000000  -2.212902  0.000000  -2.346658  -0.000000 
+ -0.000000  -0.000000  0.000000  0.000000  2.346658  0.000000  -2.098351 
+ 1.241121  -0.000000  0.000000  0.000000  0.000000  2.098351  0.000000 
+YTARGET
+ -0.000000  -3.381308  -0.000000  0.000000  0.000000  0.000000  -1.344238 
+ 3.381308  -0.000000  4.456887  0.000000  0.000000  0.000000  0.000000 
+ 0.000000  -4.456887  -0.000000  0.224756  -0.000000  -0.000000  0.000000 
+ -0.000000  -0.000000  -0.224756  -0.000000  2.316018  0.000000  0.000000 
+ -0.000000  -0.000000  0.000000  -2.316018  -0.000000  -2.243542  -0.000000 
+ -0.000000  -0.000000  0.000000  -0.000000  2.243542  -0.000000  -1.995234 
+ 1.344238  -0.000000  -0.000000  -0.000000  0.000000  1.995234  -0.000000 
+RESIDUE
+ -0.000000  0.103117  -0.000000  0.000000  0.000000  0.000000  -0.103117 
+ -0.103117  -0.000000  0.103117  0.000000  0.000000  0.000000  0.000000 
+ 0.000000  -0.103117  -0.000000  0.103117  -0.000000  0.000000  0.000000 
+ 0.000000  0.000000  -0.103117  -0.000000  0.103117  0.000000  0.000000 
+ 0.000000  0.000000  0.000000  -0.103117  -0.000000  0.103117  0.000000 
+ 0.000000  0.000000  0.000000  -0.000000  -0.103117  -0.000000  0.103117 
+ 0.103117  0.000000  -0.000000  -0.000000  0.000000  -0.103117  -0.000000 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To separate the curl flow, you execute ./proto3_curlstar.exe and in the end obtain these lines. In this case, there is no 3-cliques on the graph, hence the curlstar is zero (by convention).
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ BEST: -3.939068 1.855738 -1.260992 -0.326959 -1.612524 -2.118135 -3.657419 -3.713911 1.338071 -0.069151 -1.964186 -2.268314 3.311135 -2.544003 3.786789 2.661101 2.804420 0.399123 -1.889826 2.684642 0.877437 -1.724698 -1.971338 -1.767225 1.168761 -0.508603 -1.049481 1.073958 -2.525783 1.336459 2.662412 -2.464851 -0.807803 -2.598580 1.208190  -> 0.074432
+curlstar
+   0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000    0.00000 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+II) Technical point
+
+We use the graph composed of DMAX edges. In the sample programs, DMAX is fixed to be 7.
+
+The flow on the edges is stored in the skew-symmetric matrix as follows.
+
+ 0.000000 -4.742058  0.375567  0.084796  0.736055 -0.073994 -0.134443
+ 4.744432  0.000000  5.115996  4.828314  5.472671  4.667046 4.605170
+-0.375556 -5.117614  0.000000 -0.290727  0.360396 -0.449546 -0.510005
+-0.084801 -4.826854  0.290753  0.000000  0.651238 -0.158797 -0.219216
+-0.735967 -5.478048 -0.360468 -0.651179  0.000000 -0.809952 -0.870414
+ 0.073970 -4.668089  0.449574  0.158761  0.809906  0.000000 -0.060436
+ 0.134446 -4.607615  0.509993  0.219276  0.870362  0.060493  0.000000
+
+
+
+The adjacency is given by the integer-valued symmetric matrix.
+
+ 0 1 0 0 0 0 1
+ 1 0 1 0 0 0 0
+ 0 1 0 1 0 0 0
+ 0 0 1 0 1 0 0
+ 0 0 0 1 0 1 0
+ 0 0 0 0 1 0 1
+ 1 0 0 0 0 1 0
+
+The value on 3-cliques(i,j,k) are not stored in full. Only the representatatives [of (i,j,k) with 0<=i<j<k<DMAX] are stored in the array with the size DMAX*(DMAX-1)*(DMAX-2)/(3*2*1). The values on each (i,j,k) are get from the representatives with the correction of the signs.
+
+The access to the representative from 3-cliques(i0,j0,k0) is given by the index function:
+
+int Tindex(int i0, int j0, int k0)
+{
+ int i,j,k,ic;
+ ic=0;
+ for(i=0;i<DMAX;i++){
+  for(j=i+1;j<DMAX;j++){
+   for(k=j+1;k<DMAX;k++){
+    if(i==i0 && j==j0 && k==k0){return ic;}
+    ic++;
+   }
+ }
+ }
+return -1;
+}
+ 
+As you see, it is not pragmatical when DMAX is large. The index should be replaced by a more concise style that uses the formula of the summation of the consecutive integers (and their powers).
+
+III) How to use the general-purpose
+
+The programs for problem 3 (proto3_grad.cc and prot3_curlstar.cc) shall be used to solve the problems on arbitrary graphs. There are several points to be noted.
+
+*You should change the size of the arrays. 
+
+*In the present program, the weights for the inner product (between cochains) are taken to be unity. It could be modified.
+
+*You should modify the function "readTarget()" in those programs.
+
+ ** By this function in proto3_grad.cc, the input data of the currency exchange rate is turned into the logarithms. In the general case, such preparation is not necessary.
+
+ ** Besides, by this function in proto3_grad.cc, the artificial noise is added to the logarithmic flow, in the following way. You must remove it!
+
+ for (int i=0;i<DMAX;i++)
+ {
+  for (int j=i+1;j<DMAX;j++)
+  {
+   YTARGET[DMAX*i+j]+=2*doublerand()-1; /*YOU MUST COMMENT OUT THIS LINE*/
+   YTARGET[DMAX*j+i]=-YTARGET[DMAX*i+j]; 
+  }
+ }
+
+ 
