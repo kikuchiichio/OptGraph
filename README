@@ -3,6 +3,17 @@ This directory contains the sample programs to solve the sample problems of the 
 Title:  Particle Swarm Optimization Applied to Hodge Decomposition on Graphs
 Authors: Ichio Kikuchi, Akihito Kikuchi
 
+@misc{kikuchi_kikuchi_2020,
+ title={Particle swarm optimization and Hodge decomposition on graphs},
+ url={osf.io/kqzdr},
+ DOI={10.31219/osf.io/kqzdr},
+ publisher={OSF Preprints},
+ author={Kikuchi, Ichio and Kikuchi, Akihito},
+ year={2020},
+ month={Mar}
+}
+
+We (the authors) disclaim the copyright and leave the programs in the public domain, free to distributions and modifications,  we shall be grateful to you if you refer to this article in case you make scientific publications using them.
 
 I) Roundup
 
